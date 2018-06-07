@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,7 @@ public class MessageFragment extends Fragment {
 
     private RecyclerView recyclerViewMessages;
     private RecyclerView.Adapter adapter;
+    private String TAG = "MessageFragment_Message";
 
     @Nullable
     @Override
@@ -43,7 +45,6 @@ public class MessageFragment extends Fragment {
         recyclerViewMessages.setHasFixedSize(true);
         recyclerViewMessages.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(APIUrl.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -51,11 +52,13 @@ public class MessageFragment extends Fragment {
 
         APIService service = retrofit.create(APIService.class);
 
-        Call<Messages> call = service.getMessages(SharedPrefManager.getInstance(getActivity()).getUser().getId());
 
+        Call<Messages> call = service.getMessages(SharedPrefManager.getInstance(getActivity()).getUser().getId());
+        Log.i(TAG, "onResponse: "+service.getMessages(SharedPrefManager.getInstance(getActivity()).getUser().getId()).request().url().toString());
         call.enqueue(new Callback<Messages>() {
             @Override
             public void onResponse(Call<Messages> call, Response<Messages> response) {
+                Log.i(TAG, "onResponse: "+response.body().getMessages());
                 adapter = new MessageAdapter(response.body().getMessages(), getActivity());
                 recyclerViewMessages.setAdapter(adapter);
             }
@@ -63,6 +66,7 @@ public class MessageFragment extends Fragment {
             @Override
             public void onFailure(Call<Messages> call, Throwable t) {
                 Toast.makeText(getActivity(), t.getMessage(), Toast.LENGTH_LONG).show();
+                Log.i(TAG, "onResponse: "+t.getMessage());
             }
         });
     }
